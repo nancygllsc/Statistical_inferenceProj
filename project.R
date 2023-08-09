@@ -1,5 +1,5 @@
 
-install.packages(c("dplyr","ggplot2",'knitr','manipulate' ))
+install.packages(c("dplyr","ggplot2",'knitr','manipulate' ,"rmarkdown"))
 library(dplyr)
 library(ggplot2)
 library(knitr)

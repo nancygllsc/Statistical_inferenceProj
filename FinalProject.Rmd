@@ -1,0 +1,50 @@
+---
+title: "Comparison of the exponential distribution and the Central Limit Theorem"
+output: pdf_document
+date: "2023-08-07"
+---
+
+# Comparison of the exponential distribution and the Central Limit Theorem
+
+**Purpose:** The objective of the simulation exercise is to explore the exponential distribution and its relationship with the Central Limit Theorem.
+
+**Introduction:** The Exponential distribution is: ... 
+The Central Theorem is:
+
+By doing this simulation I expect that:
+
+**Part 1A - Simulation -graph:** In the first part of the project, a simulation of 1000 exponential distributions with a n=40 and a rate parameter of 0.2 will be performed.
+
+**part 1B - Theoretical vs Simulation; Comparison of the Means**The CLT states that the distribution of averages of iid variables becomes that of a standard
+
+**part 1C - Variance** According with the Central Limit Theorem, the distribution of the sample variance of a random sample from a population is centered at the population variance. This means that on average, the sample variances will be equal to the population variance. The sample variance is a measure of the spread of data within a sample, and it is calculated by taking the average of the squared differences between each data point and the sample mean. 
+When multiple random samples are taken, the sample variances will vary around 
+the population variance. However, the distribution of these sample variances is
+centered at the population variance, indicating that the average sample variance
+will be equal to the population variance.
+
+**Part 1D - Distributions**
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
