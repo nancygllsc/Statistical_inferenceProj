@@ -1,0 +1,136 @@
+---
+title: "ToothGrow-2"
+output: pdf_document
+date: "2023-08-30"
+---
+
+## Introduction
+
+The exploration of the ToothGrowth dataset presents a valuable opportunity to apply the knowledge and techniques we've acquired in our data analysis course. This dataset records the impact of various supplements ("supp") and dosages ("dose") on tooth growth in a controlled experiment. In this phase of the project, we will delve into the data set to gain insights into the relationships between these variables and the resulting tooth growth.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(manipulate)
+library(datasets)
+library(patchwork)
+library(UsingR)
+
+#Load the ToothGrowth data and perform some basic exploratory data analyses
+data("ToothGrowth")
+head(ToothGrowth)
+str(ToothGrowth)
+#Provide a basic summary of the data.
+summary(ToothGrowth)
+#theoretical Confidence Intervals. 
+supp.5<-t.test(filter(ToothGrowth,dose==0.5 & supp=="OJ")$len,
+               paired = FALSE, var.equal = FALSE, 
+               data = as.data.frame( 
+                 filter(ToothGrowth,dose==0.5 & supp=="VC")$len))$conf
+supp1<-t.test(filter(ToothGrowth,dose==1.0 & supp=="OJ")$len,
+              paired = FALSE, var.equal = FALSE, 
+              data = as.data.frame(
+                filter(ToothGrowth,dose==1.0 & supp=="VC")$len))$conf.int
+
+supp2<-t.test(filter(ToothGrowth,dose==2.0 & supp=="OJ")$len,
+              paired = FALSE, var.equal = FALSE, 
+              data = as.data.frame( 
+                filter(ToothGrowth,dose==2.0 & supp=="VC")$len))$conf.int
+#calculated
+conIntVC05<-(mean(filter(ToothGrowth,dose==0.5 & supp=="VC")$len) 
+             + c(-1, 1) * qnorm(0.975) *
+               sd(filter(ToothGrowth,dose==0.5 & supp=="VC")$len)/
+               sqrt(length(filter(ToothGrowth,dose==0.5 & supp=="VC")$len)))
+conIntVC1.0<-(mean(filter(ToothGrowth,dose==1.0 & supp=="VC")$len) +
+                c(-1, 1) * qnorm(0.975) *
+                sd(filter(ToothGrowth,dose==1.0 & supp=="VC")$len)/
+                sqrt(length(filter(ToothGrowth,dose==1.0 & supp=="VC")$len)))
+conIntVC2.0<-(mean(filter(ToothGrowth,dose==2.0 & supp=="VC")$len) +
+                c(-1, 1) * qnorm(0.975) * 
+                sd(filter(ToothGrowth,dose==2.0 & supp=="VC")$len)/
+                sqrt(length(filter(ToothGrowth,dose==2.0 & supp=="VC")$len)))
+conIntOJ05<-(mean(filter(ToothGrowth,dose==0.5 & supp=="OJ")$len) +
+               c(-1, 1) * qnorm(0.975) * 
+               sd(filter(ToothGrowth,dose==0.5 & supp=="OJ")$len)/
+               sqrt(length(filter(ToothGrowth,dose==0.5 & supp=="OJ")$len)))
+conIntOJ1.0<-(mean(filter(ToothGrowth,dose==1.0 & supp=="OJ")$len) + 
+                c(-1, 1) * qnorm(0.975) * 
+                sd(filter(ToothGrowth,dose==1.0 & supp=="OJ")$len)/
+                sqrt(length(filter(ToothGrowth,dose==1.0 & supp=="OJ")$len)))
+conIntOJ2.0<-(mean(filter(ToothGrowth,dose==2.0 & supp=="OJ")$len) + 
+                c(-1, 1) * qnorm(0.975) * 
+                sd(filter(ToothGrowth,dose==2.0 & supp=="OJ")$len)/
+                sqrt(length(filter(ToothGrowth,dose==2.0 & supp=="OJ")$len)))
+
+```
+
+## Graph
+
+```{r simple,include=TRUE, fig.height=6}
+knitr::opts_chunk$set(echo = FALSE,warning=FALSE) 
+
+
+conf1<- ggplot()+
+  geom_point()+
+  geom_errorbar( aes(x=filter(ToothGrowth,dose==0.5 & supp=="VC")$dose,
+                     y=filter(ToothGrowth,dose==0.5 & supp=="VC")$len,
+                     ymin = conIntVC05[1], ymax = conIntVC05[2],width = .1,colour="VC 0.5"))+
+  geom_errorbar( aes(x=filter(ToothGrowth,dose==1.0 & supp=="VC")$dose,
+                     y=filter(ToothGrowth,dose==1.0 & supp=="VC")$len, 
+                     ymin = conIntVC1.0[1], ymax = conIntVC1.0[2],width = .1,colour="VC 1.0"))+
+  geom_errorbar( aes(x=filter(ToothGrowth,dose==2.0 & supp=="VC")$dose,
+                     y=filter(ToothGrowth,dose==2.0 & supp=="VC")$len,
+                     ymin = conIntVC2.0[1], ymax = conIntVC2.0[2],width = .1,colour="VC 2.0"))+
+  geom_errorbar( aes(x=filter(ToothGrowth,dose==0.5 & supp=="OJ")$dose,
+                     y=filter(ToothGrowth,dose==0.5 & supp=="OJ")$len,ymin = conIntOJ05[1], 
+                     ymax = conIntOJ05[2],width = .1,colour="OJ 0.5"))+
+  geom_errorbar( aes(x=filter(ToothGrowth,dose==1.0 & supp=="OJ")$dose,
+                     y=filter(ToothGrowth,dose==1.0 & supp=="OJ")$len,
+                     ymin = conIntOJ1.0[1], ymax = conIntOJ1.0[2],width = .1,colour="OJ 1.0"))+
+  geom_errorbar( aes(x=filter(ToothGrowth,dose==2.0 & supp=="OJ")$dose,
+                     y=filter(ToothGrowth,dose==2.0 & supp=="OJ")$len,
+                     ymin = conIntOJ2.0[1], ymax = conIntOJ2.0[2],width = .1,colour="OJ 2.0"))+
+  theme(legend.position = "bottom")+
+  labs(title = "Tooth Growth by Supplement",tag ="Part 2",x="Dose",y="Length",
+       caption = paste("Means - Confidence Intervals","\n",
+        "VC_0.5: ",mean(filter(ToothGrowth,dose==0.5 & supp=="VC")$len),
+        " Min",round(conIntVC05[1],2),"Max ",round(conIntVC05[2],2),
+       "\n",
+       "OJ_0.5: ",mean(filter(ToothGrowth,dose==0.5 & supp=="OJ")$len),
+       " Min",round(conIntOJ05[1],2),"Max ",round(conIntOJ05[2],2),
+       "\n",
+       "Predicted:",supp.5,
+       "\n","\n",
+       "VC_1.0: ",mean(filter(ToothGrowth,dose==1.0 & supp=="VC")$len),
+       " Min",round(conIntVC1.0[1],2),"Max ",round(conIntVC1.0[2],2),
+       "\n",
+       "OJ_1.0: ",mean(filter(ToothGrowth,dose==1.0 & supp=="OJ")$len),
+       " Min",round(conIntOJ1.0[1],2),"Max ",round(conIntOJ1.0[2],2),
+       "\n",
+       "Predicted",supp1,
+       "\n","\n",
+       "VC_2.0: ",mean(filter(ToothGrowth,dose==2.0 & supp=="VC")$len),
+       " Min",round(conIntVC2.0[1],2),"Max ",round(conIntVC2.0[2],2),
+       "\n",
+       "OJ_2.0: ",mean(filter(ToothGrowth,dose==2.0 & supp=="OJ")$len),
+       " Min",round(conIntOJ2.0[1],2),"Max ",round(conIntOJ2.0[2],2),
+       "\n",
+       "Predicted: ", supp2,
+       "\n"))
+conf1
+
+```
+
+## Analysis
+
+Since there is no relationship between the group who took Vitamin C (VC) and orange Juice (OJ), the data analysis will treat the groups independently. Additionally, since a threshold is not available, the approach for the analysis is confidence intervals. The intervals are compared using the T-test (predicted) and calculated and graphed. \## Results and Conclusion: The graph shows that the values of VC and OJ at 0.5 concentration are between 8 and 16, and OJ shows higher tooth growth than VC. The values for concentration 1.0 are between 15 and 25, and OJ shows higher tooth growth than VC. Finally, for 2.0 concentration, the intervals are between 24 and 27, showing VC with a slightly higher interval than OJ with about the same tooth growth. Suggesting that a concentration below 2 OJ enhances tooth growth better than VC, but with a 2.0 concentration, tooth growth is unaffected by any of the two supplements. Generally, the confidence intervals with the T-Test are higher than the calculated values but still a good approximation.
+
+## Sources
+
+-   <https://ggplot2.tidyverse.org/>
+-   Statistical Inference for data science by Brian Caffo
+-   <https://rmarkdown.rstudio.com/authoring_quick_tour.html#Markdown_Basics>
+-   <https://ggplot2-book.org/>

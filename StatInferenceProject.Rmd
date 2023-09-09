@@ -1,0 +1,301 @@
+---
+title: "Statistical Inference Course Project1"
+output: pdf_document
+date: "2023-08-31"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(manipulate)
+library(datasets)
+library(patchwork)
+
+lambda<-.2
+meanEXP<-1/lambda
+sdEXP<-1/lambda
+#Given the standard deviation 1/lambada, then
+varEXP<-sdEXP^2
+TheoreticalMean <- meanEXP
+#2.Simulation.
+require(stats)
+set.seed(51497781)
+RSimulation<-(rexp(40*1000,rate = lambda))
+RSimulation1<-(rexp(40,rate = lambda))
+
+SampleMean<-round(mean(RSimulation1),2)
+SampleVariance<-round(var(RSimulation1),2)
+SampleStandardDeviation <- round(sd(RSimulation1),2)
+
+PopulationMean<-round(mean(RSimulation),2)
+PopulationVariance<-round(var(RSimulation*(40000-1)/40000),2)
+PopulationSD<-round(sd(RSimulation*(40000-1)/40000),2)
+#2.1 Thousand-Simulation n=40 
+x<-1:40
+set.seed(51497781)
+mod1<-lm(c(rexp(40,rate=lambda))~x)
+Simulation<- simulate(mod1, nsim = 1000)
+MeansPerSimulation<-matrix(lapply(Simulation, mean),nrow = 1000,ncol = 1)
+Smean<-round(mean(as.numeric(c(MeansPerSimulation)),2))
+Smedian<- round(median(as.numeric(MeansPerSimulation)),2)
+Ssd<-round(sd(MeansPerSimulation),2 )
+q05<-round(quantile(as.numeric(MeansPerSimulation),probs = .05),2)
+q34<-round(quantile(as.numeric(MeansPerSimulation),probs = .34),2)
+q68<-round(quantile(as.numeric(MeansPerSimulation),probs = .68),2)
+q95<-round(quantile(as.numeric(MeansPerSimulation),probs = .95),2)
+Ssd<-round(sd(MeansPerSimulation),2 )
+
+VarPerSimultation<-matrix(lapply(Simulation, var),nrow = 1000,ncol = 1)#sample variance 
+Svar<-round(var(as.numeric(VarPerSimultation)),2)
+SvarMean<-round(mean(as.numeric(VarPerSimultation)),2)
+Vq05<-round(quantile(as.numeric(VarPerSimultation),probs = .05),2)
+Vq34<-round(quantile(as.numeric(VarPerSimultation),probs = .34),2)
+Vq68<-round(quantile(as.numeric(VarPerSimultation),probs = .68),2)
+Vq95<-round(quantile(as.numeric(VarPerSimultation),probs = .95),2)
+Vsd<-round(sd(VarPerSimultation),2 )
+```
+
+## Statistical Inference Course Project
+
+**Introduction:** The Exponential distribution or negative exponential is the probability distribution of the time between events in a Poisson point process; In which events occur continuously and independently at a constant average rate. One property of the exponential distribution is that it can be viewed as a continuous analogue of the geometric distribution.
+
+The central limit theorem is one of the most useful concepts in statistics. The theorem is all about drawing samples of a finite size n from a population. The theorem states that if one collects samples of a large enough sample size n , and calculates each sample's mean (or sum), the shape of the histogram of those means (or sums) approximates a normal bell shape. The usefulness of the central limit theorem is due to the fact, that it does not matter what the distribution of the original population is, the distribution of sample means and the sums tend to follow the normal distribution.
+
+Hence, when conducting 1000 simulations with a sample size of 40 drawn from the exponential distribution, the resulting distribution of sample means is inclined to exhibit a resemblance to the normal distribution, as outlined below.
+
+**Results - graphs**
+
+```{r simple,include=TRUE}
+knitr::opts_chunk$set(echo = FALSE,warning=FALSE)
+
+SimSample<-ggplot()+
+  geom_histogram(mapping = aes(x=RSimulation1),bins = 30,color="white")+
+  geom_vline(mapping = aes(xintercept=c(SampleMean,SampleVariance, SampleStandardDeviation),
+                           color=c("Sample Mean","Sample Variance","Sample SD")))+
+  scale_color_manual(name=" ",values = c("red","blue","purple"))+
+  theme(legend.position = "bottom")+
+  labs(title = "Exponential Distribution n=40",
+       caption = paste("Sample n=40",
+                       "\n", 
+                       "Theoretical Mean: ", meanEXP,
+                       "\n",
+                       "Sample Mean: ", SampleMean,
+                       "\n",
+                       "Sample Variance: ", SampleVariance,
+                       "\n",
+                       "Sample SD", SampleStandardDeviation,
+                       "\n"
+                       ),
+       tag = "Graph 1",
+       x="Size",
+       y="Frequency")
+  
+
+
+SimPlot<- ggplot()+
+  geom_histogram(
+    mapping = aes(x=RSimulation),
+    color="white",bins = 50
+  )+
+  geom_vline(
+    mapping=
+      aes(
+        xintercept=c(TheoreticalMean,PopulationMean,PopulationVariance), 
+        color=paste(c("Theoretical Mean","Population Mean","Population Variance"))
+      )
+  )+    
+  scale_color_manual(name = "", values = paste(c("red", "purple","blue")) ) +
+
+  theme(legend.position = "bottom") +
+  
+  labs(title = "Exponential Distribution n=40,000",
+       caption = paste("Sample n=40,000",
+                       "\n", 
+                       "Theoretical Mean: ", meanEXP,
+                       "\n",
+                       "Population Mean: ", PopulationMean,
+                       "\n",
+                       "Population Variance: ", PopulationVariance,
+                       "\n",
+                       "Population SD: ",PopulationSD),
+       tag = "Graph 2",
+       x="Size",
+       y="Frequency")
+
+
+
+plotgg2<-ggplot() + 
+  geom_histogram(mapping=
+                   aes(x=as.numeric(MeansPerSimulation)),bins=30,color="white")+
+  geom_vline(mapping=
+    aes(xintercept=c(PopulationMean,meanEXP,Smean),
+               color=paste(
+                 c("Population Mean","Theoretical Mean", "Center of Mass"))
+    ))+
+  scale_color_manual(name = "", values = paste(c("blue", "red", "purple"))) +
+  theme(legend.position = "bottom") +
+  
+  labs(title = "Sample Means Distribution",
+       tag = "Graph 3",
+       x="Size",y="Frequency",
+       caption = paste("PopulationMean: ",PopulationMean,"\n",
+                       "Theoretical mean: ",meanEXP,"\n",
+                       "Means Distribution Mean: ", Smean,"\n",
+                       "Variability: ",Svar,
+                       "\n",
+                       "The Samples Mean Distribution follows the Central Limit Theorem",
+                       "\n",
+                       "which states that as the sample size increases, the distribution","\n", 
+                       "of sample means approaches a normal distribution.", "\n"
+                       ))
+
+plotgg3<-ggplot() + 
+  geom_histogram(mapping = aes(as.numeric(MeansPerSimulation)), 
+                 alpha=.5, position="identity",
+                 fill="white", col="black",bins = 30)+
+  #normal distribution
+  geom_vline(mapping=
+               aes(xintercept=
+                     c(q05,q34,q68,q95,
+                       Smean) ,
+                   color= paste(c("5%","34%","68%","95%",
+                                  "Mean")
+                                )
+               )
+             )+
+  scale_color_manual(name = "", values = paste(c("blue", "blue",
+                                                 "blue","blue",
+                                                 "coral"
+                                                   
+                                                 ))) +
+  theme(legend.position = "bottom") +
+  
+  labs(title = "Simulations Variance Distribution. "
+       ,tag = "Part 1B",x="Size",y="Y",
+       caption=paste("Mean: ",Smean ,
+                     "\n",
+                     "5% :",q05,
+                     " ",
+                     "34% :",q34,
+                     " ",
+                     "68% :",q68,
+                     " ",
+                     "95% : ",q95,
+                     "\n",
+                     "SD: ", Ssd,
+                     "\n",
+                     "Variability: ",Svar,
+                     "\n"
+                          
+))+
+  #stat_function(fun = rnorm, colour="red",size=1, 
+                #args = list(n=40000,mean=meanEXP,sd=sdEXP))+
+  labs(title = "Means Distribution",
+       tag = "Graph 4",x="size",y="Frequency")
+
+
+plotgg4<-ggplot() + 
+  geom_histogram(mapping = aes(as.numeric(MeansPerSimulation)), 
+                 alpha=.5, position="identity",
+                 fill="white", col="black",bins = 30)+
+  #normal distribution
+  geom_vline(mapping=
+               aes(xintercept=
+                     c(
+                       Smean,
+                       Smean+Ssd,Smean-Ssd,
+                       Smean+(2*Ssd),Smean-(2*Ssd)
+                     ) ,
+                   color= paste(c(
+                                  "Mean",
+                                  "SD1-R","SD1-L",
+                                  "SD2-R","SD2-L"
+                                  
+                   ))
+               )
+  )+
+  scale_color_manual(name = "", values = paste(c(
+                                                 "coral",
+                                                 "darkorchid","cyan",
+                                                 "darkgreen","red"  
+  ))) +
+  theme(legend.position = "bottom") +
+  
+  labs(title = "Simulations Variance Distribution. "
+       ,tag = "Graph 5",x="Size",y="Y",
+       caption=paste("Mean: ",Smean ,
+                    
+                     "\n",
+                     "SD: ", Ssd,
+                     "\n",
+                     "2SD-R",Smean+2*Ssd,
+                     " ",
+                     "1SD-R",Smean+Ssd,
+                     "\n",
+                     
+                     "2SD-L",Smean-2*Ssd,
+                     " ",
+                     "1SD-L",Smean-Ssd,
+                     "\n",
+                     
+                     "Theoretical SD", sdEXP,
+                     "\n",
+                     "Variability: ",Svar,
+                     "\n"
+       ))+
+  #stat_function(fun = rnorm, colour="red",size=1, 
+  #args = list(n=40000,mean=meanEXP,sd=sdEXP))+
+  labs(title = "Means Distribution",
+       tag = "Graph 5",x="Size",y="Frequency")
+
+varPlot<-ggplot() +
+  geom_histogram(mapping = aes(as.numeric(VarPerSimultation)),
+                 alpha=.5, position="identity",
+                 fill="white", col="black",bins = 30)+
+  geom_vline(mapping=
+               aes(xintercept=c(Svar,SampleVariance,varEXP,SvarMean,PopulationVariance),
+                   color=c("Distribution ","Sample","Theoretical ",
+                                 "Distribution Mean","Population")
+               ))+
+  scale_color_manual(name = "", values = paste(c("blue", "cyan", "green","purple","red"))) +
+  theme(legend.position = "bottom") +
+  
+  labs(title = "Simulations Variance Distribution. "
+       ,tag = "Graph 6",x="Size",y="Frequency",
+       caption=paste("Distribution Variability: ",Svar,
+                     "\n",
+                     "Sample Variability: ", SampleVariance,
+                     "\n",
+                     "Theoretical Variability: ", varEXP,
+                     "\n",
+                     "Distribution Mean:", SvarMean,
+                     "\n",
+                     "Population Variance", PopulationVariance
+                     )
+  )
+part1A<-SimSample+SimPlot+plot_layout(nrow = 1)
+
+
+part1A
+plotgg2
+plotgg3
+plotgg4
+varPlot
+
+```
+
+## Discussion
+
+As the Central Limit Theorem (CLT) states, regardless of the shape of the original population distribution, as the sample size increases, the sample means will approach a normal distribution as long as the sample size is sufficiently large. Graph 1 represents the behavior of one simulation n=40, and its mean is 3.32. In contrast, graph 2 represents the population n=40,000; its mean is 5, precisely the theoretical mean value. Graph 3 shows the mean of 1000 simulations n=40, which is also 5. The behavior of graphs 1, 2, and 3 represent CLT as the sample size increases. In Graph Four, the distribution shows that the distribution quantiles are not symmetrical around the mean as opposed to the normal distribution. Additionally, Graph 5 shows that the standard deviations are not within the limits of the quantiles that characterize the normal distribution. As seen in graphs 4 and 5, while the shapes of the exponential and normal distributions are quite different, there is a similarity in the concept of the "bell curve." A symmetric bell-shaped curve famously characterizes the normal distribution. On the other hand, the exponential distribution is skewed, with a rapidly dropping curve on the left side and a long tail on the right, as seen in Graph 2. Graph 6 represents the variance distribution, where the mean of the distribution is very close to the theoretical variance, 25.12 and 25, respectively. This corresponds with the book "Statistical Inference" on page 44, "The distribution of the sample variance is centered at what it's estimating."
+
+## Sources
+
+- https://ggplot2.tidyverse.org/
+- Statistical Inference for data science by Brian Caffo 
+- https://rmarkdown.rstudio.com/authoring_quick_tour.html#Markdown_Basics
+- https://ggplot2-book.org/
